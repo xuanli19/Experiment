@@ -1,0 +1,4 @@
+if a=5 
+then a++
+else if(a>=3)a--
+else a=b

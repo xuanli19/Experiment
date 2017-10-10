@@ -1,0 +1,7 @@
+int k  ;
+for(k=0;k<100;k++){
+	if(k%2==0)
+		printf("hello");
+	else
+		printf("word") ;
+}
