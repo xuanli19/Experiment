@@ -7,15 +7,17 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Map;
+import java.util.List;
 import java.util.Map.Entry;
+import java.util.Scanner;
 import java.util.Set;
+import java.util.Stack;
 
 /**
  * 
  * @author lixuan
  * @version 2017.10.10 
- * 			TODO 实现求first和follow集合，根据first和follow集合求出预测分析表 ，根据预测分析表求出 
+ * 			TODO 实现求first和follow集合，根据first和follow集合求出预测分析表
  *          TODO (实现复杂)对于包含左递归或回溯的文法 ，进行消除左递归和消除回溯
  *          TODO (实现复杂)对非LL1文法能进行判断
  */
@@ -168,9 +170,16 @@ public class Demo {
 		if(c==start)set.add('#') ;// 起始符号  follow 加上#  
 		Follow.put(c, set) ;
 	}
-
+	public static String showStack(Stack<Character>sta){ //将栈里的元素打印出来 ;
+		List<Character>list =sta ;
+		StringBuilder sb =new StringBuilder() ;
+		for(Character x: list){
+			sb.append(x) ;
+		}
+		return sb.toString();
+	}
 	public static void main(String[] args) {
-		File file = new File("src/cn/lixuan/test02/2.txt");
+		File file = new File("src/cn/lixuan/test02/1.txt");
 		FileReader fr = null;
 		BufferedReader br = null;
 		try {
@@ -301,16 +310,17 @@ public class Demo {
 						vis[c] = true;
 						break;	
 					}
-					else if (!vis[c]){
-						System.out.println(c+": "+rudu[c]);
-					}
+//					else if (!vis[c]){
+//						System.out.println(c+": "+rudu[c]);
+//					}
 				}	
 			}
+			System.out.println("*******************************************");
 			//****************************************** 
 			//  构造预测分析表 ;
 			HashMap<Character,HashMap<Character,String>>table =new HashMap<>() ;
 			for( Entry<Character, ArrayList<String>> s   :hashmap.entrySet()){
-				System.out.print(s.getKey()+": ");
+				//System.out.print(s.getKey()+": ");
 				ArrayList<String> list = s.getValue() ;
 				for(String str : list){
 					if(str.equals("ε")){
@@ -335,7 +345,7 @@ public class Demo {
 							table.put(s.getKey(),map1  ) ;
 							continue ;
 						}
-						while(index+1<str.length() && str.charAt(index)<='Z' && str.charAt(index)>='A'){
+						while(index<str.length() && str.charAt(index)<='Z' && str.charAt(index)>='A'){
 							for(Character q : First.get(str.charAt(index))){
 								if(q!='ε'){
 								HashMap<Character,String>map1 =new HashMap<>() ;
@@ -364,6 +374,66 @@ public class Demo {
 				}
 			}
 			
+			// 判断一个一个表达式是不是该文法的一个句型 ;
+			//思路：利用两个栈实现，一个符号栈 一个输入串栈  ;
+			Stack<Character>fuhao =new Stack<>() ; 
+			Stack<Character>input =new Stack<>() ; 
+			fuhao.push('#') ; //将#和起始符号压入字符栈 ;
+			fuhao.push(start) ; 
+			System.out.println("请输入一个表达式(如i+i*i):");
+			String str  ; 
+			Scanner sc =new Scanner(System.in) ; 
+			str =sc.next() ; 
+			//str ="i+i*i" ; //用于测试 ;
+			input.push('#') ;  //将#和表达式串倒序压入input栈 ;
+			for(int k =str.length()-1 ;k>=0 ;k--){
+				input.push(str.charAt(k)) ; 
+			}
+ 			System.out.println(showStack(fuhao)+"  "+new StringBuilder(showStack(input)).reverse());
+			//开始预测分析 ;
+			while(!fuhao.empty()){
+				Character top_fuhao =fuhao.peek() ; 
+				Character top_input =input.peek() ;
+				if(top_fuhao=='#'){
+					if(top_input=='#'){
+						System.out.println("匹配成功 ");
+					}
+					else{
+						System.out.println("匹配失败");
+					}
+					break ;
+				}else if(top_fuhao=='ε'){
+					fuhao.pop() ;
+					System.out.println(showStack(fuhao)+"  "+new StringBuilder(showStack(input)).reverse());
+				}
+				else if( !(top_fuhao<='Z'&& top_fuhao>='A')  ) {
+					//终结符 ;
+					if(top_fuhao!=top_input){
+						System.out.println("匹配失败");
+						break ; 
+					}else{
+					//	System.out.println(top_input+"出栈");
+						fuhao.pop() ;
+						input.pop() ;
+						System.out.println(showStack(fuhao)+"  "+new StringBuilder(showStack(input)).reverse());
+					}
+				}else {
+					//非终结符 ;
+					if(table.get(top_fuhao).containsKey(top_input)){
+						fuhao.pop() ;
+						String s1 =table.get(top_fuhao).get(top_input) ; 
+						for(int k =s1.length()-1 ;k>=0 ;k--){
+							fuhao.push(s1.charAt(k)) ;
+						}
+						System.out.println(showStack(fuhao)+"  "+new StringBuilder(showStack(input)).reverse());
+					}else{
+						System.out.println("匹配失败");
+						break ; 
+					}
+				}
+			}
+			
+			//
 			
 			
 			

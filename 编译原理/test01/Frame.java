@@ -44,7 +44,7 @@ public class Frame extends JFrame {
 
 	private JPanel source;
 	private JTextField path;
-
+	
 	/**
 	 * Launch the application.
 	 */
@@ -54,19 +54,21 @@ public class Frame extends JFrame {
 				try {
 					Frame frame = new Frame();
 					frame.setVisible(true);
+					
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
 			}
 		});
 	}
-
+	
 	/**
 	 * Create the frame.
 	 */
 	public Frame() {
 		setTitle("词法分析器");
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+	
 		setBounds(100, 100, 1107, 514);
 		source = new JPanel();
 		source.setBorder(new EmptyBorder(5, 5, 5, 5));

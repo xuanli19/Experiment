@@ -1,0 +1,5 @@
+A->FG
+F->Sa|D
+D->iD
+G->(i)
+S->s
