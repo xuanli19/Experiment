@@ -5,8 +5,10 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
 
 /**
  * 
@@ -24,6 +26,13 @@ class Exp {
 	public Exp() {
 		set = new HashSet<>();
 	}
+	public Exp(Character left ,String right1 ,String right2 ,HashSet<Character>set ){
+		this.set =set ;
+		this.left =left ;
+		this.right1 =right1 ;
+		this.right2 =right2 ;
+		this.set =set ;
+	}
 }
 
 // 每一个项目类 Item;
@@ -35,18 +44,12 @@ class Item {
 	public Item() {
 		expList = new ArrayList<>();
 		fol = new ArrayList<>();
-		
 	}
-	
 }
 
 // 实现思路：
 public class Demo {
-	public static boolean isequal(Item a ,Item b  ){
-		//判断两个项目是否是相等的 ;
-		
-		return false ;
-	}
+
 	public static ArrayList<Item> ItemList = new ArrayList<>();
 	public static HashMap<Integer, HashMap<Character, String>> Action = new HashMap<>();
 	public static HashMap<Integer, HashMap<Character, Integer>> Goto = new HashMap<>();
@@ -54,7 +57,28 @@ public class Demo {
 	public static HashSet<Character>feiZhongJie =new HashSet<>() ;
 	public static HashMap<Character,ArrayList<String>>table =new HashMap<>() ;
 	public static FileReader fr = null;
-	//public static ArrayList<>
+	public static Character start  ;
+	public static LinkedList<Item>list = null ;
+	public static boolean isequal(Item a ,Item b  ){
+		//判断两个项目是否是相等的 ;
+		
+		return false ;
+	}
+	public static void  solve(Item item){
+		//根据直接产生式 推导出整个项目,然后将项目放到ItemList中,推导出来的状态放到linkedlist中
+		//并标记好产生式关系,以及判重 ;
+		HashSet<Character>set1 =new HashSet<>() ;
+		LinkedList<Character>li =new LinkedList<>() ; 
+		for(Exp e : item.zhijie){
+			Character left =e.left ; 
+			String right1 =e.right1 ;
+			String right2 =e.right2 ; 
+			if(right2.length()!=0 ){
+				
+			}
+		}
+		return;	
+	}
 	public static void main(String[] args) {
 		try {
 			fr = new FileReader(new File("src/cn/lixuan/test03/1.txt"));
@@ -63,6 +87,7 @@ public class Demo {
 			while ((s = bf.readLine()) != null) {
 				String[]arr = s.split("->") ;
 				Character st =arr[0].charAt(0) ;
+				if(start==null)start=st ;
 				if(table.containsKey(st)){
 					ArrayList<String>ar = table.get(st) ;
 					ar.add(arr[1]) ;
@@ -74,11 +99,24 @@ public class Demo {
 					table.put(st, ar) ;
 				}
 			}
+			//先将I0直接产生式求出,然后 solve(I0) 一个个的解决 ;
+			//然后将I0的后面的字符 ; 
+			Item item = new Item() ;
+			HashSet<Character>set1 =new HashSet<>() ; 
+			set1.add('#') ;
+			item.zhijie.add(new Exp('S',"",""+start,set1)) ; //   S->.E  #  起始产生式 ;
+			item.fol.add(start) ;
+			
+			list.add(item) ; //放入起始产生式 ;
+			while(!list.isEmpty()){
+				// list 不为空  ;
+				Item it = list.peek();
+				list.pop() ;
+				solve(it) ;
+				
+			}
 			
 			
-			//先将I0求出 然后 solve(I0) 一个个的解决 ;
-			
-
 		} catch (Exception a) {
 			a.printStackTrace();
 			try {
