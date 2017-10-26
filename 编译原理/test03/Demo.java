@@ -73,10 +73,28 @@ public class Demo {
 			Character left =e.left ; 
 			String right1 =e.right1 ;
 			String right2 =e.right2 ; 
-			if(right2.length()!=0 ){
+			if(right2.length()!=0 ){ 
+				if(right2.charAt(0)>='A' && right2.charAt(0)<='Z' && set1.contains(right2.charAt(0))==false ) {
+					li.add(right2.charAt(0)) ;
+					set1.add(right2.charAt(0)) ;
+					item.fol.add(right2.charAt(0)) ;
+				}else if(right2.charAt(0)>='a' && right2.charAt(0)<='z' && set1.contains(right2.charAt(0))==false) {
+					item.fol.add(right2.charAt(0)) ; 
+				}
+				
+			}else {
+				// 移到最后一个位置了 ;
 				
 			}
 		}
+		while(!li.isEmpty()) {
+			Character top = li.peek() ;
+			li.pop() ;
+			ArrayList<String> list2 = table.get(top) ;
+			
+		}
+		
+		
 		return;	
 	}
 	public static void main(String[] args) {
