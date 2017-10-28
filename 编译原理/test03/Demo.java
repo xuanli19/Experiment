@@ -10,6 +10,7 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.Stack;
 
 /**
  * 
@@ -55,6 +56,7 @@ class Exp {
 	public int hashCode() { // 让它们hash地址相同，便于equals函数判重 ;
 		return 1;
 	}
+	
 }
 
 // 每一个项目类 Item;
@@ -98,9 +100,7 @@ public class Demo {
 
 	public static ArrayList<Item> ItemList = new ArrayList<>();
 	public static HashMap<Integer, HashMap<Character, String>> Action = new HashMap<>(); // 对终结符
-																							// ;
 	public static HashMap<Integer, HashMap<Character, Integer>> Goto = new HashMap<>(); // 对非终结符
-																						// ;
 	public static HashSet<Character> zhongJie = new HashSet<>();
 	public static HashSet<Character> feiZhongJie = new HashSet<>();
 	public static HashMap<Character, ArrayList<String>> table = new HashMap<>();
@@ -112,7 +112,20 @@ public class Demo {
 	public static HashMap<Item, Integer> ItemToInt = new HashMap<>();
 	public static HashMap<String, HashMap<Character, Integer>> guiYue = new HashMap<>();
 	public static HashSet<Item> set2 = new HashSet<>(ItemList);
-
+	public static String showStackC(Stack<Character>s){
+		ArrayList<Character>list =new ArrayList<>(s) ;
+		StringBuilder  sb =new StringBuilder() ; 
+		for(Character c :list)
+			sb.append(c) ;
+		return sb.toString();
+	}
+	public static String showStackI(Stack<Integer>s){
+		ArrayList<Integer>list =new ArrayList<>(s) ;
+		StringBuilder  sb =new StringBuilder() ; 
+		for(Integer c :list)
+			sb.append(c) ;
+		return sb.toString();
+	}
 	public static boolean toEmpty(Character c) { // 判断是否能变成空串 ;
 		if (c == 'ε')
 			return true;
@@ -207,10 +220,7 @@ public class Demo {
 			if (right2.length() >= 1 && q.equals(right2.charAt(0))) {
 				list1.add(new Exp(left, right1 + q, right2.substring(1, right2.length()), zhanwang));
 			}
-			else if( right2.length()==0 && zhanwang.equals(q) ) {
-				
-			}
-			//TODO
+			
 			
 		}
 		newitem.zhijie = list1;
@@ -294,7 +304,7 @@ public class Demo {
 
 	public static void main(String[] args) {
 		try {
-			fr = new FileReader(new File("src/cn/lixuan/test03/2.txt"));
+			fr = new FileReader(new File("src/cn/lixuan/test03/1.txt"));
 			BufferedReader bf = new BufferedReader(fr);
 			String s;
 			while ((s = bf.readLine()) != null) {
@@ -320,6 +330,9 @@ public class Demo {
 				}
 			}
 			int num = 0;
+			HashMap<Character, Integer> map0 = new HashMap<>();
+			map0.put('S', ++num);
+			guiYue.put(""+start, map0);
 			for (Entry<Character, ArrayList<String>> g : table.entrySet()) {
 				ArrayList<String> list2 = g.getValue();
 				for (String s1 : list2) {
@@ -404,15 +417,50 @@ public class Demo {
 				// 该产生式拓展后，按照它的fol进行状态转换，存为item.zhijie,放进list中 ;
 				// 若不重复,则在map一个从前到后的映射 ;
 				ArrayList<Character> fol = it.fol;
+				
+				for (Exp f1 : it.expList) {
+					if (f1.right2.equals("") ) {
+						// 规约 ; 判断规约的产生式 ;
+						int st = guiYue.get(f1.right1).get(f1.left);
+						//System.out.println("规约:"+f1);
+						HashMap<Character, String> map = Action.get(count1) ;
+						if(map==null)
+							map =new HashMap<>() ;
+						map.put(f1.zhanwang, "r"+st) ;
+						Action.put(count1, map) ;
+					} 
+				}
 				abc: for (Character q : fol) {
 					Item newitem = solve1(it, q); // 产生它的直接产生式 ;
-					for (Item it1 : set2) { // 进行判重 ，若直接产生式不同再进行拓展 ;
-						if (it1.equals(newitem)) {
-							continue abc;
+//					for (Item it1 : list) { // 进行判重 ，若直接产生式不同再进行拓展 ;
+//						if (it1.equals(newitem)) {
+//							continue abc;
+//						}
+//					}
+					if (set2.contains(newitem) || list.contains(newitem)){
+						//TODO ;
+						if (q >= 'A' && q <= 'Z') {
+							HashMap<Character, Integer> map = Goto.get(count1) ;
+							if(map==null)
+								 map = new HashMap<>();
+							map.put(q, count) ;
+							Goto.put(count1, map);
+						} else {
+							//TODO 
+							// s移进 r规约 ;
+							for (Exp f : it.expList) {
+								 if (f.right2.length() >= 1 && q.equals((f.right2.charAt(0)))) {
+									// 移进 ;
+									HashMap<Character, String> map = Action.get(count1) ;
+									if(map==null)
+										map =new HashMap<>() ;
+									map.put(q, "s" + ItemToInt.get(newitem)) ;// count 有问题 ;TODO 
+									Action.put(count1, map) ;
+								} 
+							}
 						}
-					}
-					if (list.contains(newitem))
 						continue abc;
+					}
 					list.add(newitem);
 					count++;
 					if (q >= 'A' && q <= 'Z') {
@@ -421,44 +469,24 @@ public class Demo {
 							 map = new HashMap<>();
 						map.put(q, count) ;
 						Goto.put(count1, map);
+						
 					} else {
 						//TODO 
 						HashMap<Character, String> map1 = new HashMap<>();
 						// s移进 r规约 ;
 						for (Exp f : it.expList) {
-//							System.out.println(f + " hello");
-							if (f.right2.equals("") && f.zhanwang.equals(q)) {
-								// 规约 ; 判断规约的产生式 ;
-								int st = guiYue.get(f.right1).get(f.left);
-								map1.put(q, "r" + st);
-								System.out.println("规约:"+f);
-								//Action.put(count1, map1);
-								HashMap<Character, String> map = Action.get(count1) ;
-								if(map==null)
-									map =new HashMap<>() ;
-								map.put(q, "r"+st) ;
-								Action.put(count1, map) ;
-								//System.out.println("hello1");
-							} else if (f.right2.length() >= 1 && q.equals((f.right2.charAt(0)))) {
+					    if (f.right2.length() >= 1 && q.equals((f.right2.charAt(0)))) {
 								// 移进 ;
-								//System.out.println("hello2");
-								System.out.println("移进:"+f);
-								
+							//	System.out.println("移进:"+f);
 								HashMap<Character, String> map = Action.get(count1) ;
 								if(map==null)
 									map =new HashMap<>() ;
 								map.put(q, "s" + count) ;
 								Action.put(count1, map) ;
-							} else {
-								System.out.println(f +" "+q);
 							}
 						}
-						System.out.println(count1);
-						
-						
-						
+						//System.out.println(count1);
 					}
-					
 					ItemToInt.put(newitem, count);
 				}
 			}
@@ -467,8 +495,10 @@ public class Demo {
 			System.out.println("项目集族共有" + set2.size() + "种状态");
 			for (Item w : set2) {
 				System.out.println("项目"+ItemToInt.get(w));
+				
 				for (Exp r : w.expList) {
 					System.out.println(r);
+					
 				}
 			}
 			int nodenum = set2.size();
@@ -483,7 +513,7 @@ public class Demo {
 				System.out.print(c + "\t");
 			}
 			System.out.println();
-			
+			//预测分析表 ;
 			for (int w = 1; w <= nodenum; w++) {
 				System.out.print("" + w + "\t");
 				for (Character c : zhongJie) {
@@ -503,7 +533,80 @@ public class Demo {
 				
 				System.out.println();
 			}
-
+			
+		//*****************
+		//总控程序  对输入串进行分析;
+			String text ="(i)+i" ;
+			int step =1 ; 
+			Stack<Integer>zt =new Stack<>() ; //存放状态的栈  ;
+			zt.push(1) ;
+			Stack<Character>op =new Stack<>() ; //存放符号的栈 ;
+			op.push('#') ;
+			Stack<Character>input  =new Stack<>() ; //存放输入串的栈 ;
+			input.push('#') ;
+			for(int k =text.length()-1;k>=0 ;k--)
+				input.push(text.charAt(k)) ;
+			
+			// s为栈顶状态  a为输入符号,若action(s,a)为移进sk 则将k状态移进状态栈中 ;
+			//若为规约 ,则进行规约处理 ; 比如action(s,a)为rk,则按照k号表达式进行规约,状态栈出栈,符号栈弹出相应的符号，然后将goto(栈顶状态,栈顶符号)添加到状态栈中 ;
+			//若为s1,则表示成功  ;
+			//若不存在action(s,a),则表示报错 ;
+			while(true){
+				int topzt = zt.peek() ;
+				Character topinput =input.peek() ;
+				if(Action.get(topzt)==null || Action.get(topzt).get(topinput)==null){
+					//报错 ;
+					System.out.println(showStackI(zt)+"\t"+showStackC(op)+"\t"+new StringBuilder(showStackC(input)).reverse() );
+				
+					System.out.println("报错");
+					break ;
+				}else if(Action.get(topzt).get(topinput).equals("r1")){
+					//成功 ;
+					System.out.println(showStackI(zt)+"\t"+showStackC(op)+"\t"+new StringBuilder(showStackC(input)).reverse() );
+					System.out.println("成功");
+					break ;
+				}
+				else if(Action.get(topzt).get(topinput).charAt(0)=='s'){
+					//移进 ;
+					int state = Integer.parseInt(Action.get(topzt).get(topinput).substring(1)) ;
+					op.push(topinput) ;
+					input.pop() ;
+					zt.push(state) ;
+					System.out.println(showStackI(zt)+"\t"+showStackC(op)+"\t"+new StringBuilder(showStackC(input)).reverse() );
+					continue ;
+				}else if(Action.get(topzt).get(topinput).charAt(0)=='r'){
+					//规约 ;
+					int id = Integer.parseInt(Action.get(topzt).get(topinput).substring(1)) ;
+					//按照第id号产生式进行规约 ;
+					//zt.pop() ;
+					String str ="" ;Character c =new Character('a') ;
+					qwe : for (Entry<String, HashMap<Character, Integer>> e1 : guiYue.entrySet()) {
+						for (Entry<Character, Integer> e2 : e1.getValue().entrySet()) {
+							if(e2.getValue()==id){
+								str = e1.getKey() ;
+								c = e2.getKey() ;
+								break qwe ;
+							}
+						}
+					}
+					int len = str.length() ;
+					while(len--!=0){
+						op.pop() ;
+					}
+					len =str.length() ;
+					while(len--!=0){
+						zt.pop();
+					}
+					op.push(c) ;
+					topzt  = zt.peek() ;
+					zt.push( Goto.get(topzt).get(c) ) ;
+					System.out.println(showStackI(zt)+"\t"+showStackC(op)+"\t"+new StringBuilder(showStackC(input)).reverse() );
+					continue ;
+				}
+				
+			}
+			
+			
 		} catch (Exception a) {
 			a.printStackTrace();
 			try {
